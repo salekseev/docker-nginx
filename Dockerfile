@@ -3,6 +3,8 @@ FROM alpine:3.4
 MAINTAINER Stas Alekseev "stas.alekseev@gmail.com"
 
 ENV NGINX_VERSION 1.10.1
+ENV NGINX_KAFKA_MODULE_VERSION=caa8073
+ENV NGINX_LDAP_MODULE_VERSION=dbcef31
 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -38,8 +40,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-http_image_filter_module=dynamic \
 		--with-http_geoip_module=dynamic \
 		--with-http_perl_module=dynamic \
-		--add-dynamic-module=/usr/src/ngx_kafka_module \
-		--add-dynamic-module=/usr/src/nginx-auth-ldap \
+		--add-dynamic-module=/usr/src/yourpleasure-ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
+		--add-dynamic-module=/usr/src/kvspb-nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
 		--with-threads \
 		--with-stream \
 		--with-stream_ssl_module \
@@ -66,6 +68,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		gd-dev \
 		geoip-dev \
 		perl-dev \
+		openldap-dev \
 	&& apk add --no-cache \
 	  --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
 		--allow-untrusted \
@@ -73,8 +76,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		librdkafka-dev \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
-	&& curl -fSL https://api.github.com/repos/yourpleasure/ngx_kafka_module/tarball -o ngx_kafka_module.tar.gz \
-	&& curl -fSL https://api.github.com/repos/kvspb/nginx-auth-ldap/tarball -o nginx-auth-ldap.tar.gz \
+	&& curl -fSL https://api.github.com/repos/yourpleasure/ngx_kafka_module/tarball/$NGINX_KAFKA_MODULE_VERSION -o ngx_kafka_module.tar.gz \
+	&& curl -fSL https://api.github.com/repos/kvspb/nginx-auth-ldap/tarball/$NGINX_LDAP_MODULE_VERSION -o nginx-auth-ldap.tar.gz \
 	&& export GNUPGHOME="$(mktemp -d)" \
 	&& gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEYS" \
 	&& gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
@@ -115,6 +118,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& strip /usr/sbin/nginx* \
 	&& strip /usr/lib/nginx/modules/*.so \
 	&& rm -rf /usr/src/nginx-$NGINX_VERSION \
+	&& rm -rf /usr/src/yourpleasure-ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
+	&& rm -rf /usr/src/kvspb-nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
 	\
 	# Bring in gettext so we can get `envsubst`, then throw
 	# the rest away. To do this, we need to install `gettext`
