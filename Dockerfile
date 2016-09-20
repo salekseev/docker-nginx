@@ -42,8 +42,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-http_geoip_module=dynamic \
 		--with-http_perl_module=dynamic \
 		--add-dynamic-module=/usr/src/ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
-		--add-dynamic-module=/usr/src/mailru-graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION \
-		--add-dynamic-module=/usr/src/kvspb-nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
+		--add-dynamic-module=/usr/src/graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION \
+		--add-dynamic-module=/usr/src/nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
 		--with-threads \
 		--with-stream \
 		--with-stream_ssl_module \
@@ -126,7 +126,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& rm -rf /usr/src/nginx-$NGINX_VERSION \
 	&& rm -rf /usr/src/ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
 	&& rm -rf /usr/src/graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION \
-	&& rm -rf /usr/src/kvspb-nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
+	&& rm -rf /usr/src/nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
 	\
 	# Bring in gettext so we can get `envsubst`, then throw
 	# the rest away. To do this, we need to install `gettext`
