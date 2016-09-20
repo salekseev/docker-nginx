@@ -3,8 +3,9 @@ FROM alpine:3.4
 MAINTAINER Stas Alekseev "stas.alekseev@gmail.com"
 
 ENV NGINX_VERSION 1.10.1
-ENV NGINX_KAFKA_MODULE_VERSION=cd133b7
-ENV NGINX_LDAP_MODULE_VERSION=dbcef31
+ENV NGINX_KAFKA_MODULE_VERSION v0.9.1
+ENV NGINX_GRAPHITE_MODULE_VERSION v1.1.0
+ENV NGINX_LDAP_MODULE_VERSION dbcef31bebb2d54b6120422d0b178bbf78bc48f7
 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -40,7 +41,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-http_image_filter_module=dynamic \
 		--with-http_geoip_module=dynamic \
 		--with-http_perl_module=dynamic \
-		--add-dynamic-module=/usr/src/brg-liuwei-ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
+		--add-dynamic-module=/usr/src/ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
+		--add-dynamic-module=/usr/src/mailru-graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION \
 		--add-dynamic-module=/usr/src/kvspb-nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
 		--with-threads \
 		--with-stream \
@@ -76,16 +78,18 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		librdkafka-dev \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
-	&& curl -fSL https://api.github.com/repos/brg-liuwei/ngx_kafka_module/tarball/$NGINX_KAFKA_MODULE_VERSION -o ngx_kafka_module.tar.gz \
-	&& curl -fSL https://api.github.com/repos/kvspb/nginx-auth-ldap/tarball/$NGINX_LDAP_MODULE_VERSION -o nginx-auth-ldap.tar.gz \
+	&& curl -fSL https://github.com/brg-liuwei/ngx_kafka_module/arhive/$NGINX_KAFKA_MODULE_VERSION.tar.gz -o ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
+	&& curl -fSL https://github.com/mailru/graphite-nginx-module/archive/$NGINX_GRAPHITE_MODULE_VERSION.tar.gz -o graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION.tar.gz \
+	&& curl -fSL https://github.com/kvspb/nginx-auth-ldap/archive/$NGINX_LDAP_MODULE_VERSION.tar.gz -o nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION.tar.gz \
 	&& export GNUPGHOME="$(mktemp -d)" \
 	&& gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEYS" \
 	&& gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
 	&& rm -r "$GNUPGHOME" nginx.tar.gz.asc \
 	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
-	&& tar -zxC /usr/src -f ngx_kafka_module.tar.gz \
-	&& tar -zxC /usr/src -f nginx-auth-ldap.tar.gz \
+	&& tar -zxC /usr/src -f ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
+	&& tar -zxC /usr/src -f graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION.tar.gz \
+	&& tar -zxC /usr/src -f nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION.tar.gz \
 	&& rm ngx_kafka_module.tar.gz \
 	&& rm nginx-auth-ldap.tar.gz \
 	&& rm nginx.tar.gz \
@@ -98,6 +102,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& mv objs/ngx_http_geoip_module.so objs/ngx_http_geoip_module-debug.so \
 	&& mv objs/ngx_http_perl_module.so objs/ngx_http_perl_module-debug.so \
 	&& mv objs/ngx_http_kafka_module.so objs/ngx_http_kafka_module-debug.so \
+	&& mv objs/ngx_http_http_graphite_module.so objs/ngx_http_http_graphite_module-debug.so \
 	&& mv objs/ngx_http_auth_ldap_module.so objs/ngx_http_auth_ldap_module-debug.so \
 	&& ./configure $CONFIG \
 	&& make -j$(getconf _NPROCESSORS_ONLN) \
@@ -113,12 +118,14 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& install -m755 objs/ngx_http_geoip_module-debug.so /usr/lib/nginx/modules/ngx_http_geoip_module-debug.so \
 	&& install -m755 objs/ngx_http_perl_module-debug.so /usr/lib/nginx/modules/ngx_http_perl_module-debug.so \
 	&& install -m755 objs/ngx_http_kafka_module-debug.so /usr/lib/nginx/modules/ngx_http_kafka_module-debug.so \
+	&& install -m755 objs/ngx_http_http_graphite_module-debug.so /usr/lib/nginx/modules/ngx_http_http_graphite_module-debug.so \
 	&& install -m755 objs/ngx_http_auth_ldap_module-debug.so /usr/lib/nginx/modules/ngx_http_auth_ldap_module-debug.so \
 	&& ln -s ../../usr/lib/nginx/modules /etc/nginx/modules \
 	&& strip /usr/sbin/nginx* \
 	&& strip /usr/lib/nginx/modules/*.so \
 	&& rm -rf /usr/src/nginx-$NGINX_VERSION \
-	&& rm -rf /usr/src/yourpleasure-ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
+	&& rm -rf /usr/src/ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION \
+	&& rm -rf /usr/src/graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION \
 	&& rm -rf /usr/src/kvspb-nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION \
 	\
 	# Bring in gettext so we can get `envsubst`, then throw
