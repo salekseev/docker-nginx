@@ -78,7 +78,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		librdkafka-dev \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
-	&& curl -fSL https://github.com/brg-liuwei/ngx_kafka_module/arhive/$NGINX_KAFKA_MODULE_VERSION.tar.gz -o ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
+	&& curl -fSL https://github.com/brg-liuwei/ngx_kafka_module/archive/$NGINX_KAFKA_MODULE_VERSION.tar.gz -o ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
 	&& curl -fSL https://github.com/mailru/graphite-nginx-module/archive/$NGINX_GRAPHITE_MODULE_VERSION.tar.gz -o graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION.tar.gz \
 	&& curl -fSL https://github.com/kvspb/nginx-auth-ldap/archive/$NGINX_LDAP_MODULE_VERSION.tar.gz -o nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION.tar.gz \
 	&& export GNUPGHOME="$(mktemp -d)" \
