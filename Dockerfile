@@ -58,10 +58,13 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
 	&& apk add --no-cache --virtual .build-deps \
+	    bash \
+	    python \
 		gcc \
+		g++ \
 		libc-dev \
 		make \
-		openssl-dev \
+		libressl-dev \
 		pcre-dev \
 		zlib-dev \
 		linux-headers \
@@ -72,11 +75,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		geoip-dev \
 		perl-dev \
 		openldap-dev \
-	&& apk add --no-cache \
-	  --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
-		--allow-untrusted \
-		librdkafka \
-		librdkafka-dev \
 	&& curl -fSL https://github.com/edenhill/librdkafka/archive/v$LIBRDKAFKA_VER.tar.gz -o librdkafka-$LIBRDKAFKA_VER.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
@@ -153,7 +151,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	)" \
 	&& apk add --no-cache --virtual .nginx-rundeps $runDeps \
 	&& apk del .build-deps \
-	&& apk del librdkafka-dev \
 	&& apk del .gettext \
 	&& mv /tmp/envsubst /usr/local/bin/ \
 	\
