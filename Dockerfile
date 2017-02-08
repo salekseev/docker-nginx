@@ -1,11 +1,12 @@
-FROM alpine:3.4
+FROM alpine:3.5
 
 MAINTAINER Stas Alekseev "stas.alekseev@gmail.com"
 
-ENV NGINX_VERSION 1.10.1
+ENV NGINX_VERSION 1.10.3
 ENV NGINX_KAFKA_MODULE_VERSION 0.9.1
 ENV NGINX_GRAPHITE_MODULE_VERSION 1.1.0
 ENV NGINX_LDAP_MODULE_VERSION dbcef31bebb2d54b6120422d0b178bbf78bc48f7
+ENV LIBRDKAFKA_VER 0.9.3
 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -76,6 +77,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--allow-untrusted \
 		librdkafka \
 		librdkafka-dev \
+	&& curl -fSL https://github.com/edenhill/librdkafka/archive/v$LIBRDKAFKA_VER.tar.gz -o librdkafka-$LIBRDKAFKA_VER.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
 	&& curl -fSL https://github.com/brg-liuwei/ngx_kafka_module/archive/v$NGINX_KAFKA_MODULE_VERSION.tar.gz -o ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
@@ -86,14 +88,20 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
 	&& rm -r "$GNUPGHOME" nginx.tar.gz.asc \
 	&& mkdir -p /usr/src \
+	&& tar -zxC /usr/src -f librdkafka-$LIBRDKAFKA_VER.tar.gz \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& tar -zxC /usr/src -f ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
 	&& tar -zxC /usr/src -f graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION.tar.gz \
 	&& tar -zxC /usr/src -f nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION.tar.gz \
+	&& rm librdkafka-$LIBRDKAFKA_VER.tar.gz \
 	&& rm ngx_kafka_module-$NGINX_KAFKA_MODULE_VERSION.tar.gz \
 	&& rm graphite-nginx-module-$NGINX_GRAPHITE_MODULE_VERSION.tar.gz \
 	&& rm nginx-auth-ldap-$NGINX_LDAP_MODULE_VERSION.tar.gz \
 	&& rm nginx.tar.gz \
+	&& cd /usr/src/librdkafka-$LIBRDKAFKA_VER \
+	&& ./configure --prefix=/usr \
+	&& make -j "$(getconf _NPROCESSORS_ONLN)" \
+	&& make install \
 	&& cd /usr/src/nginx-$NGINX_VERSION \
 	&& ./configure $CONFIG --with-debug \
 	&& make -j$(getconf _NPROCESSORS_ONLN) \
